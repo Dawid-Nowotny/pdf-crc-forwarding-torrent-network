@@ -1,0 +1,2 @@
+fastapi[standard]
+pypdf==5.1.0
