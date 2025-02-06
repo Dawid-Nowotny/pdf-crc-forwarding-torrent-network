@@ -49,3 +49,11 @@ async def send_pdf_to_node(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+    
+@router.delete("/stop-torrent/{node_name}", status_code=status.HTTP_204_NO_CONTENT)
+def stop_torrent_node(node_name: str):
+    if node_name not in network:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Node not found")
+
+    network[node_name].shutdown()
+    del network[node_name]
