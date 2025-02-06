@@ -5,11 +5,13 @@ import time
 
 from src.constants import NODE_PORTS
 from .create_torrent import create_torrent
+from .CRC import CRC
 
 class TorrentNode:
     def __init__(self, node_name: str, polynomial: str):
         self.node_name = node_name
         self.polynomial = polynomial
+        self.crc = CRC()
         self.session = lt.session()
         self.session.listen_on(NODE_PORTS[node_name], NODE_PORTS[node_name] + 10)
         self.save_path = f"nodes/{node_name}_downloads"
@@ -41,6 +43,12 @@ class TorrentNode:
         self.session.add_torrent({'ti': info, 'save_path': os.path.dirname(file_path)})
 
         return torrent_path
+    
+    def calculate_crc(self, file_path: str) -> int:
+        crc_function = self.crc.get_crc_function(self.polynomial)
+        with open(file_path, "rb") as f:
+            data = f.read()
+        return crc_function(self.polynomial, data)
     
     def shutdown(self) -> None:
         print(f"Node {self.node_name} closed")
