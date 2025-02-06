@@ -5,6 +5,7 @@ from src.services.pdf_service import validate_pdf
 from src.services.node_service import start_communication_websocket, close_communication_websocket
 from src.services.torrent_service import transfer_file
 from src.domain.TorrentNode import TorrentNode
+from src.schemas.polynomial_request import PolynomialRequest
 from src.constants import NODE_PORTS
 
 router = APIRouter()
@@ -13,9 +14,9 @@ torrent_admin = None
 network = None
 
 @router.post("/start-torrents", status_code=status.HTTP_204_NO_CONTENT)
-async def start_websockets():
+async def start_websockets(polynomial: PolynomialRequest):
     global network 
-    network = {node: TorrentNode(node) for node in NODE_PORTS.keys()}
+    network = {node: TorrentNode(node, polynomial.polynomial) for node in NODE_PORTS.keys()}
     start_communication_websocket()
 
 @router.delete("/stop-torrents", status_code=status.HTTP_204_NO_CONTENT)
@@ -32,11 +33,10 @@ async def send_pdf_to_node(
     file: UploadFile,
     first_seeder: str = Form(...),
     target_node: str = Form(...),
-    polynomial: str = Form(...)
 ):
     global network
 
-    node_request = validate_pdf_request(first_seeder, target_node, polynomial)
+    node_request = validate_pdf_request(first_seeder, target_node)
     await validate_pdf(file)
 
     file.file.seek(0)
