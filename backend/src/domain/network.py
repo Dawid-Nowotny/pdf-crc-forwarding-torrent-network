@@ -1,4 +1,4 @@
-from Graph import Graph
+from .Graph import Graph
 
 def create_network() -> Graph:
     network = Graph()
