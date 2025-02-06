@@ -16,6 +16,16 @@ network = None
 async def start_websockets():
     global network 
     network = {node: TorrentNode(node) for node in NODE_PORTS.keys()}
+    start_communication_websocket()
+
+@router.delete("/stop-torrents", status_code=status.HTTP_204_NO_CONTENT)
+def stop_websockets():
+    global network
+    for node in network.values():
+        node.shutdown()
+
+    network = {}
+    close_communication_websocket()
 
 @router.post("/send-pdf", status_code=status.HTTP_204_NO_CONTENT)
 async def send_pdf_to_node(
@@ -30,7 +40,6 @@ async def send_pdf_to_node(
     await validate_pdf(file)
 
     file.file.seek(0)
-    start_communication_websocket()
 
     try:
         await transfer_file(file, node_request.first_seeder, node_request.target_node, network)

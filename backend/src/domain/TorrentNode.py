@@ -40,3 +40,8 @@ class TorrentNode:
         self.session.add_torrent({'ti': info, 'save_path': os.path.dirname(file_path)})
 
         return torrent_path
+    
+    def shutdown(self) -> None:
+        print(f"Node {self.node_name} closed")
+        self.session.pause()
+        del self.session
