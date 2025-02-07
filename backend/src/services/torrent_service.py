@@ -39,19 +39,6 @@ async def transfer_file(file: UploadFile, first_seeder: str, target_node: str, n
         asyncio.create_task(network[first_seeder].send_to_communication_port(error_message))
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Network is not initialized")
 
-    if first_seeder not in network or target_node not in network:
-        error_message = {
-            "current_node": first_seeder,
-            "status": "CONNECTION_FAILED",
-            "details": {
-                "failed_node": first_seeder,
-                "target_node": target_node,
-                "message": "Invalid nodes."
-            }
-        }
-        asyncio.create_task(network[first_seeder].send_to_communication_port(error_message))
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid nodes")
-
     file_path = save_uploaded_file(file, first_seeder)
     initial_crc = network[first_seeder].calculate_crc(file_path)
 
@@ -79,34 +66,51 @@ async def transfer_file(file: UploadFile, first_seeder: str, target_node: str, n
             previous_node = path[i - 1]
             await wait_for_previous_node(previous_node)
 
-        handle = network[receiver].add_torrent(torrent_path)
+        try:
+            if receiver not in network:
+                raise Exception(f"Node {receiver} is unavailable.")
 
-        while not handle.status().is_seeding:
-            time.sleep(1)
+            handle = network[receiver].add_torrent(torrent_path)
 
-        receiver_file_path = f"{network[receiver].save_path}/{file.filename}"
-        network[receiver].seed_file(receiver_file_path)
+            while not handle.status().is_seeding:
+                time.sleep(1)
 
-        received_crc_value = network[receiver].calculate_crc(receiver_file_path)
-        crc_success = received_crc_value == initial_crc
+            receiver_file_path = f"{network[receiver].save_path}/{file.filename}"
+            network[receiver].seed_file(receiver_file_path)
 
-        transfer_log = {
-            "node": sender,
-            "status": "TRANSFER_SUCCESS" if crc_success else "CRC_ERROR",
-            "details": {
-                "target_node": receiver,
-                "crc_value": received_crc_value,
-                "expected_crc": initial_crc,
-                "polynomial": network[receiver].polynomial,
-                "message": "File transferred successfully." if crc_success else "CRC mismatch detected!"
+            received_crc_value = network[receiver].calculate_crc(receiver_file_path)
+            crc_success = received_crc_value == initial_crc
+
+            transfer_log = {
+                "node": sender,
+                "status": "TRANSFER_SUCCESS" if crc_success else "CRC_ERROR",
+                "details": {
+                    "target_node": receiver,
+                    "crc_value": received_crc_value,
+                    "expected_crc": initial_crc,
+                    "polynomial": network[receiver].polynomial,
+                    "message": "File transferred successfully." if crc_success else "CRC mismatch detected!"
+                }
             }
-        }
-        await network[receiver].send_to_communication_port(transfer_log)
+            await network[receiver].send_to_communication_port(transfer_log)
 
-        transfer_status[sender] = True
+            transfer_status[sender] = True
 
-        if not crc_success:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"CRC mismatch at {receiver}")
+            if not crc_success:
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"CRC mismatch at {receiver}")
+
+        except Exception as e:
+            error_message = {
+                "current_node": sender,
+                "status": "CONNECTION_FAILED",
+                "details": {
+                    "failed_node": receiver,
+                    "target_node": target_node,
+                    "message": str(e)
+                }
+            }
+            await network[sender].send_to_communication_port(error_message)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Transfer failed at {receiver}: {str(e)}")
 
     final_node = path[-1]
     await wait_for_previous_node(path[-2])
