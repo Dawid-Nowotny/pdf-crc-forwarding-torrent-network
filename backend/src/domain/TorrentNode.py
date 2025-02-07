@@ -2,8 +2,10 @@ import libtorrent as lt
 
 import os
 import time
+import json
+import websockets
 
-from src.constants import NODE_PORTS
+from src.constants import NODE_PORTS, COMMUNICATION_PORT
 from .create_torrent import create_torrent
 from .CRC import CRC
 
@@ -49,6 +51,14 @@ class TorrentNode:
         with open(file_path, "rb") as f:
             data = f.read()
         return crc_function(self.polynomial, data)
+    
+    async def send_to_communication_port(self, message: dict) -> None:
+        uri = f"ws://localhost:{COMMUNICATION_PORT}"
+        try:
+            async with websockets.connect(uri) as websocket:
+                await websocket.send(json.dumps(message))
+        except Exception as e:
+            print(f"Error sending message to communication WebSocket: {e}")
     
     def shutdown(self) -> None:
         print(f"Node {self.node_name} closed")
