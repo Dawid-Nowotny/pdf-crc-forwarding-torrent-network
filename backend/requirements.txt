@@ -1,0 +1,3 @@
+fastapi[standard]
+pypdf==5.1.0
+libtorrent==2.0.11
