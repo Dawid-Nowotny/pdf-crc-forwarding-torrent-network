@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { startWebsockets, stopWebsockets, closeWebsocket } from '../../services/api';
+import { startTorrents, stopWebsockets, closeWebsocket } from '../../services/api';
 import './SimulationControls.css';
 
 function SimulationControls() {
-  const [admin_node, setAdminNode] = useState('Node1'); 
+  //const [admin_node, setAdminNode] = useState('Node1'); 
   const [close_node, setCloseNode] = useState('Node1'); 
+  const [polynomial, setPolynomial] = useState('11111111');
 
   const handleStart = async () => {
-    await startWebsockets({ admin_node: admin_node });
+    //await startWebsockets({ admin_node: admin_node });
+    await startTorrents({ polynomial: polynomial });
     window.location.reload(); 
   };
 
@@ -25,7 +27,17 @@ function SimulationControls() {
       <div class="bar">Simulation Controls</div>
       <div class="content">
         <div class="form-container">
-          <div>
+        <div>
+            <label htmlFor="polynomial">Polynomial (8-bit number)</label>
+            <input
+              id="polynomial"
+              type="text"
+              placeholder="Polynomial (8-bit number)"
+              value={polynomial}
+              onChange={(e) => setPolynomial(e.target.value)}
+            />
+          </div>
+          {/* <div>
             <label htmlFor="adminNode">Admin Node</label>
             <select
               id="adminNode"
@@ -43,7 +55,7 @@ function SimulationControls() {
               <option value="Node9">Node9</option>
               <option value="Node10">Node10</option>
             </select>
-          </div>
+          </div> */}
 
           <div class="buttoncontainer">
             <button class="button2" onClick={handleStart}>Start</button>

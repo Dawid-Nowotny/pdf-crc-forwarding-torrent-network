@@ -2,8 +2,8 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/api/v1/node';
 
-export const startWebsockets = async (data) => {
-  await axios.post(`${API_URL}/start-websockets`, data);
+export const startTorrents = async (data) => {
+  await axios.post(`${API_URL}/start-torrents`, data);
 };
 
 export const stopWebsockets = async () => {
