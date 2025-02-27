@@ -55,6 +55,7 @@ const Graph = () => {
         const currentNode = log.node;
         const nextNode = logs[index + 1].node || logs[index + 1].details?.target_node;
 
+
         setEdges((prevEdges) =>
           prevEdges.map((edge) => {
               if (
@@ -62,7 +63,8 @@ const Graph = () => {
                   (edge.source === nextNode && edge.target === currentNode)
               ) {
                   const isForward = edge.source === currentNode && edge.target === nextNode;
-                  const isSuccess = logs[index + 1].status === "CRC_SUCCESS";
+                  const isSuccess = logs[index + 1].status === "TRANSFER_SUCCESS";
+                  console.log("isSuccess: ", logs[index + 1].status);
                   return {
                       ...edge,
                       style: { 
@@ -92,15 +94,11 @@ const Graph = () => {
 
   useEffect(() => {
     const handleLogChange = () => {
-      if (logService.getShouldColorGraph()) {
-        resetGraph();
+      resetGraph().then(() => {
         colorGraph();
-      }
-      else {
-        resetGraph();
-      }
+      });
     };
-
+  
     logService.subscribe(handleLogChange);
     return () => logService.unsubscribe(handleLogChange);
   }, []);
