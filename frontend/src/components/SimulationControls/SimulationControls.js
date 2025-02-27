@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { startTorrents, stopTorrents, closeWebsocket } from '../../services/api';
+import { startTorrents, stopTorrents, closeNode } from '../../services/api';
 import './SimulationControls.css';
 
 function SimulationControls() {
@@ -18,7 +18,7 @@ function SimulationControls() {
   };
 
   const handleClose = async () => {
-    await closeWebsocket(close_node);
+    await closeNode(close_node);
     window.location.reload(); 
   };
 

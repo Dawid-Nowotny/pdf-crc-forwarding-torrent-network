@@ -10,8 +10,8 @@ export const stopTorrents = async () => {
   await axios.delete(`${API_URL}/stop-torrents`);
 };
 
-export const closeWebsocket = async (nodeName) => {
-  await axios.delete(`${API_URL}/close-node/${nodeName}`);
+export const closeNode = async (nodeName) => {
+  await axios.delete(`${API_URL}/stop-torrent/${nodeName}`);
 };
 
 export const sendPDF = async (formData) => {
