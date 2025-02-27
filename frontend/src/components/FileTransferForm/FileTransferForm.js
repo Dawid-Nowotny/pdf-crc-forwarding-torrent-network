@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { sendFile } from '../../services/api';
+import { sendPDF } from '../../services/api';
 import './FileTransferForm.css';
 import logService from '../../services/LogService';
 
 function FileTransferForm() {
   const [file, setFile] = useState(null);
-  const [admin_node, setAdminNode] = useState('Node1');
+  const [first_seeder, setFirstSeeder] = useState('Node1');
   const [target_node, setTargetNode] = useState('Node5');
-  const [polynomial, setPolynomial] = useState('11111111');
   const [message, setMessage] = useState('');
   const [type, setType] = useState(''); 
   const [showMessage, setShowMessage] = useState(false);
@@ -33,19 +32,18 @@ function FileTransferForm() {
     logService.setShouldColorGraph(false);
     e.preventDefault();
 
-    if (!file || !admin_node || !target_node || !polynomial) {
+    if (!file || !first_seeder || !target_node) {
       handleAddMessage('Please fill in all fields!', 'error');
       return;
     }
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('admin_node', admin_node);
+    formData.append('first_seeder', first_seeder);
     formData.append('target_node', target_node);
-    formData.append('polynomial', polynomial);
 
     try {
-      await sendFile(formData);
+      await sendPDF(formData);
       setTimeout(() => {
         logService.setShouldColorGraph(true);
       }, 100);
@@ -73,11 +71,11 @@ function FileTransferForm() {
           </div>
 
           <div>
-            <label htmlFor="adminNode">Admin Node</label>
+            <label htmlFor="adminNode">First Seeder</label>
             <select
               id="adminNode"
-              value={admin_node}
-              onChange={(e) => setAdminNode(e.target.value)}
+              value={first_seeder}
+              onChange={(e) => setFirstSeeder(e.target.value)}
             >
               <option value="Node1">Node1</option>
               <option value="Node2">Node2</option>
@@ -110,17 +108,6 @@ function FileTransferForm() {
               <option value="Node9">Node9</option>
               <option value="Node10">Node10</option>
             </select>
-          </div>
-
-          <div>
-            <label htmlFor="polynomial">Polynomial (8-bit number)</label>
-            <input
-              id="polynomial"
-              type="text"
-              placeholder="Polynomial (8-bit number)"
-              value={polynomial}
-              onChange={(e) => setPolynomial(e.target.value)}
-            />
           </div>
 
           <button type="submit">Send</button>
