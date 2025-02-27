@@ -82,7 +82,7 @@ async def transfer_file(file: UploadFile, first_seeder: str, target_node: str, n
             crc_success = received_crc_value == initial_crc
 
             transfer_log = {
-                "node": sender,
+                "current_node": sender,
                 "status": "TRANSFER_SUCCESS" if crc_success else "CRC_ERROR",
                 "details": {
                     "target_node": receiver,
@@ -116,7 +116,7 @@ async def transfer_file(file: UploadFile, first_seeder: str, target_node: str, n
     await wait_for_previous_node(path[-2])
 
     final_log = {
-        "node": final_node,
+        "current_node": final_node,
         "status": "TRANSFER_SUCCESS",
         "details": {
             "message": "Final node received the file successfully.",
