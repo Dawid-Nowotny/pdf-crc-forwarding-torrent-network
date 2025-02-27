@@ -50,37 +50,39 @@ const Graph = () => {
 
   const colorGraph = () => {
     const logs = logService.getLogs();
-    logs.forEach((log, index) => {
-      if (index < logs.length - 1) {
-        const currentNode = log.node;
-        const nextNode = logs[index + 1].node || logs[index + 1].details?.target_node;
-
-
-        setEdges((prevEdges) =>
-          prevEdges.map((edge) => {
-              if (
-                  (edge.source === currentNode && edge.target === nextNode) ||
-                  (edge.source === nextNode && edge.target === currentNode)
-              ) {
-                  const isForward = edge.source === currentNode && edge.target === nextNode;
-                  const isSuccess = logs[index + 1].status === "TRANSFER_SUCCESS";
-                  console.log("isSuccess: ", logs[index + 1].status);
-                  return {
-                      ...edge,
-                      style: { 
-                          ...edge.style, 
-                          stroke: isSuccess ? '#00FF00' : '#FF0000',
-                          strokeWidth: 2 
-                      },
-                      animated: true,
-                      markerEnd: isForward ? { type: 'arrowclosed', color: isSuccess ? '#00FF00' : '#FF0000' } : undefined,
-                      markerStart: !isForward ? { type: 'arrowclosed', color: isSuccess ? '#00FF00' : '#FF0000' } : undefined
-                  };
-              }
-              return edge;
-          })
-        );
-      }
+  
+    if (!logs || logs.length === 0) return;
+  
+    logs.forEach((log) => {
+      const currentNode = log.current_node;
+      const nextNode = log.details?.target_node;
+      const failedNode = log.details?.failed_node;
+  
+      setEdges((prevEdges) =>
+        prevEdges.map((edge) => {
+          if (log.status === "TRANSFER_SUCCESS" && edge.source === currentNode && edge.target === nextNode) {
+            //console.log(`Success: ${currentNode} -> ${nextNode}`);
+            return {
+              ...edge,
+              style: { stroke: "#00FF00", strokeWidth: 2 },
+              animated: true,
+              markerEnd: { type: "arrowclosed", color: "#00FF00" },
+            };
+          }
+  
+          if (log.status === "CONNECTION_FAILED" && edge.source === currentNode && edge.target === failedNode) {
+            //console.log(`Failure: ${currentNode} -> ${failedNode}`);
+            return {
+              ...edge,
+              style: { stroke: "#FF0000", strokeWidth: 2 },
+              animated: true,
+              markerEnd: { type: "arrowclosed", color: "#FF0000" },
+            };
+          }
+  
+          return edge;
+        })
+      );
     });
   };
 
