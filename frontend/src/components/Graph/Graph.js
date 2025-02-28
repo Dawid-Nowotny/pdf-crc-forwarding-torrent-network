@@ -1,32 +1,14 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import logService from '../../services/LogService';
 import './Graph.css';
-
-import { useEffect } from 'react';
-import {
-  ReactFlow,
-  useNodesState,
-  useEdgesState,
-} from '@xyflow/react';
+import { ReactFlow, useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import CustomNode from './CustomNode';
- 
+import NodeStatusService from '../../services/NodeStatusService';
+
 const nodeTypes = {
   custom: CustomNode,
 };
-
-const initialNodes = [
-  { id: 'Node1', type: 'custom', position: { x: 15, y: 100 }, data: { label: 'Node1' } },
-  { id: 'Node2', type: 'custom', position: { x: 215, y: 50 }, data: { label: 'Node2' } },
-  { id: 'Node3', type: 'custom', position: { x: 215, y: 250 }, data: { label: 'Node3' } },
-  { id: 'Node4', type: 'custom', position: { x: 415, y: 50 }, data: { label: 'Node4' } },
-  { id: 'Node5', type: 'custom', position: { x: 415, y: 250 }, data: { label: 'Node5' } },
-  { id: 'Node6', type: 'custom', position: { x: 615, y: 150 }, data: { label: 'Node6' } },
-  { id: 'Node7', type: 'custom', position: { x: 815, y: 250 }, data: { label: 'Node7' } },
-  { id: 'Node8', type: 'custom', position: { x: 1015, y: 50 }, data: { label: 'Node8' } },
-  { id: 'Node9', type: 'custom', position: { x: 1015, y: 250 }, data: { label: 'Node9' } },
-  { id: 'Node10', type: 'custom', position: { x: 1215, y: 250 }, data: { label: 'Node10' } },
-];
 
 const initialEdges = [
   { id: 'e1-2', source: 'Node1', target: 'Node2' },
@@ -38,30 +20,37 @@ const initialEdges = [
   { id: 'e6-7', source: 'Node6', target: 'Node7' },
   { id: 'e8-7', source: 'Node8', target: 'Node7' },
   { id: 'e8-9', source: 'Node8', target: 'Node9' },
-  { id: 'e9-10', source: 'Node9', target: 'Node10'},
+  { id: 'e9-10', source: 'Node9', target: 'Node10' },
   { id: 'e4-6', source: 'Node4', target: 'Node6' },
   { id: 'e5-7', source: 'Node5', target: 'Node7' },
   { id: 'e2-8', source: 'Node2', target: 'Node8' },
 ];
 
 const Graph = () => {
+  const nodeStatusService = NodeStatusService.getInstance();
+
+  // Inicjalizowanie węzłów z NodeStatusService, uwzględniając zapisane pozycje
+  const initialNodes = nodeStatusService.getNodes().map((node) => ({
+    id: node.id,
+    type: 'custom',
+    position: nodeStatusService.getDefaultPositions()[node.id] || { x: 15, y: 100 }, // Używamy zapisanych pozycji
+    data: { label: node.id, online: node.online },
+  }));
+
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges] = useEdgesState(initialEdges);
-
   const colorGraph = () => {
     const logs = logService.getLogs();
-  
     if (!logs || logs.length === 0) return;
-  
+
     logs.forEach((log) => {
       const currentNode = log.current_node;
       const nextNode = log.details?.target_node;
       const failedNode = log.details?.failed_node;
-  
+
       setEdges((prevEdges) =>
         prevEdges.map((edge) => {
           if (log.status === "TRANSFER_SUCCESS" && edge.source === currentNode && edge.target === nextNode) {
-            //console.log(`Success: ${currentNode} -> ${nextNode}`);
             return {
               ...edge,
               style: { stroke: "#00FF00", strokeWidth: 2 },
@@ -69,9 +58,8 @@ const Graph = () => {
               markerEnd: { type: "arrowclosed", color: "#00FF00" },
             };
           }
-  
+
           if (log.status === "CONNECTION_FAILED" && edge.source === currentNode && edge.target === failedNode) {
-            //console.log(`Failure: ${currentNode} -> ${failedNode}`);
             return {
               ...edge,
               style: { stroke: "#FF0000", strokeWidth: 2 },
@@ -79,17 +67,34 @@ const Graph = () => {
               markerEnd: { type: "arrowclosed", color: "#FF0000" },
             };
           }
-  
+
           return edge;
         })
       );
     });
   };
 
+  // Nasłuchuj zmian statusu w węzłach
+  useEffect(() => {
+    const handleStatusChange = () => {
+      setNodes((prevNodes) =>
+        prevNodes.map((node) => {
+          const updatedNode = nodeStatusService.getNodes().find((n) => n.id === node.id);
+          return updatedNode ? { ...node, data: { ...node.data, online: updatedNode.online } } : node;
+        })
+      );
+    };
+
+    nodeStatusService.subscribe(handleStatusChange);
+
+    return () => {
+      nodeStatusService.unsubscribe(handleStatusChange);
+    };
+  }, [nodeStatusService]);
+
   const resetGraph = () => {
     return new Promise((resolve) => {
       setEdges(initialEdges);
-      
       resolve();
     });
   };
@@ -100,13 +105,13 @@ const Graph = () => {
         colorGraph();
       });
     };
-  
+
     logService.subscribe(handleLogChange);
     return () => logService.unsubscribe(handleLogChange);
   }, []);
 
   return (
-    <div style={{ width: '100%', height: '100%' }} class="content_graph">
+    <div style={{ width: '100%', height: '100%' }} className="content_graph">
       <ReactFlow
         nodes={nodes}
         edges={edges}

@@ -1,25 +1,30 @@
 import { useState } from 'react';
 import { startTorrents, stopTorrents, closeNode } from '../../services/api';
 import './SimulationControls.css';
+import NodeStatusService from '../../services/NodeStatusService';
 
 function SimulationControls() {
-  //const [admin_node, setAdminNode] = useState('Node1'); 
+  const nodeStatusService = NodeStatusService.getInstance();
   const [close_node, setCloseNode] = useState('Node1'); 
   const [polynomial, setPolynomial] = useState('11111111');
 
   const handleStart = async () => {
     //await startWebsockets({ admin_node: admin_node });
     await startTorrents({ polynomial: polynomial });
+    nodeStatusService.updateAllNodeStatuses(true);
     window.location.reload(); 
   };
 
   const handleStop = async () => {
     await stopTorrents();
+    nodeStatusService.updateAllNodeStatuses(false);
+    window.location.reload(); 
   };
 
   const handleClose = async () => {
     await closeNode(close_node);
-    window.location.reload(); 
+    nodeStatusService.updateNodeStatus(close_node, false);
+    //window.location.reload(); 
   };
 
   return (

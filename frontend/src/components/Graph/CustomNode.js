@@ -11,6 +11,15 @@ function CustomNode({ data }) {
       background: '#f9f9f9',
       width: '100px',
     }}>
+       <div style={{
+        width: '15px',
+        height: '15px',
+        borderRadius: '50%',
+        backgroundColor: data.online ? 'green' : 'red', // Zielona/czerwona kropka
+        position: 'absolute',
+        top: '5px',
+        right: '5px'
+      }}></div>
       <div>
         <img 
           src={data.image || "https://images.emojiterra.com/google/android-nougat/512px/1f5a5.png"}
