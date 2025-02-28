@@ -72,16 +72,16 @@ class NodeStatusService {
 
     getDefaultPositions() {
       return {
-        Node1: { x: 15, y: 100 },
-        Node2: { x: 215, y: 50 },
-        Node3: { x: 215, y: 250 },
-        Node4: { x: 415, y: 50 },
-        Node5: { x: 415, y: 250 },
-        Node6: { x: 615, y: 150 },
-        Node7: { x: 815, y: 250 },
-        Node8: { x: 1015, y: 50 },
-        Node9: { x: 1015, y: 250 },
-        Node10: { x: 1215, y: 250 },
+        Node1: { x: 50, y: 250 },
+        Node2: { x: 330, y: 50 },
+        Node3: { x: 50, y: 500 },
+        Node4: { x: 330, y: 300 },
+        Node5: { x: 330, y: 550 },
+        Node6: { x: 600, y: 200 },
+        Node7: { x: 700, y: 430 },
+        Node8: { x: 950, y: 50 },
+        Node9: { x: 950, y: 300 },
+        Node10: { x: 950, y: 550 },
       };
     }
 }
