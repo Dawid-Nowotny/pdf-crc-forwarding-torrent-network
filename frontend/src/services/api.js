@@ -6,6 +6,10 @@ export const startTorrents = async (data) => {
   await axios.post(`${API_URL}/start-torrents`, data);
 };
 
+export const startWithFaultyTorrent = async (data) => {
+  await axios.post(`${API_URL}/start-torrents-with-fault`, data);
+}
+
 export const stopTorrents = async () => {
   await axios.delete(`${API_URL}/stop-torrents`);
 };
