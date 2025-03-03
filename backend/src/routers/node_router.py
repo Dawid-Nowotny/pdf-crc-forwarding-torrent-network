@@ -49,6 +49,7 @@ async def send_pdf_to_node(
     file: UploadFile,
     first_seeder: str = Form(...),
     target_node: str = Form(...),
+    faulty_node: str = Form(None)
 ):
     global network
 
@@ -58,7 +59,7 @@ async def send_pdf_to_node(
     file.file.seek(0)
 
     try:
-        await transfer_file(file, node_request.first_seeder, node_request.target_node, network)
+        await transfer_file(file, node_request.first_seeder, node_request.target_node, network, faulty_node)
         return {"message": "File transferred successfully"}
     except HTTPException as e:
         raise e

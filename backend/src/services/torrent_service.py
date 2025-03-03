@@ -5,6 +5,7 @@ import os
 import time
 import asyncio
 
+from .pdf_service import corrupt_file
 from src.domain.network import create_network
 from src.schemas.PDFRequest import PDFRequest
 
@@ -22,7 +23,7 @@ async def wait_for_previous_node(previous_node) -> None:
     while previous_node not in transfer_status or not transfer_status[previous_node]:
         await asyncio.sleep(0.1)
 
-async def transfer_file(file: UploadFile, first_seeder: str, target_node: str, network: dict):
+async def transfer_file(file: UploadFile, first_seeder: str, target_node: str, network: dict, faulty_node: str = None):
     global transfer_status
     graph = create_network()
 
@@ -76,6 +77,10 @@ async def transfer_file(file: UploadFile, first_seeder: str, target_node: str, n
                 time.sleep(1)
 
             receiver_file_path = f"{network[receiver].save_path}/{file.filename}"
+
+            if receiver == faulty_node:
+                corrupt_file(receiver_file_path)
+
             network[receiver].seed_file(receiver_file_path)
 
             received_crc_value = network[receiver].calculate_crc(receiver_file_path)
