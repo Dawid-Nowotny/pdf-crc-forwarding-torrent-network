@@ -11,16 +11,16 @@ class NodeStatusService {
       } else {
         // Jeśli brak zapisanych danych, inicjalizujemy domyślnie
         this.nodes = [
-          { id: 'Node1', online: false },
-          { id: 'Node2', online: false },
-          { id: 'Node3', online: false },
-          { id: 'Node4', online: false },
-          { id: 'Node5', online: false },
-          { id: 'Node6', online: false },
-          { id: 'Node7', online: false },
-          { id: 'Node8', online: false },
-          { id: 'Node9', online: false },
-          { id: 'Node10', online: false },
+          { id: 'Node1', online: false, faulty: false },
+          { id: 'Node2', online: false, faulty: false },
+          { id: 'Node3', online: false, faulty: false },
+          { id: 'Node4', online: false, faulty: false },
+          { id: 'Node5', online: false, faulty: false },
+          { id: 'Node6', online: false, faulty: false },
+          { id: 'Node7', online: false, faulty: false },
+          { id: 'Node8', online: false, faulty: false },
+          { id: 'Node9', online: false, faulty: false },
+          { id: 'Node10', online: false, faulty: false },
         ];
       }
 
@@ -44,19 +44,21 @@ class NodeStatusService {
       this.listeners.forEach(listener => listener());
     }
 
-    updateNodeStatus(nodeId, status) {
+    updateNodeStatus(nodeId, online, faulty) {
         const nodeIndex = this.nodes.findIndex(node => node.id === nodeId);
         if (nodeIndex !== -1) {
-          this.nodes[nodeIndex].online = status;
+          this.nodes[nodeIndex].online = online;
+          this.nodes[nodeIndex].faulty = faulty;
           this.saveNodes();
           this.notify();
         }
       }
     
-      updateAllNodeStatuses(status) {
+      updateAllNodeStatuses(online, faulty) {
         this.nodes = this.nodes.map(node => ({
           ...node,
-          online: status,
+          online: online,
+          faulty: faulty
         }));
         this.saveNodes();
         this.notify();

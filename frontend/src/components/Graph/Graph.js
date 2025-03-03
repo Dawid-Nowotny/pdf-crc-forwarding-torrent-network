@@ -34,7 +34,7 @@ const Graph = () => {
     id: node.id,
     type: 'custom',
     position: nodeStatusService.getDefaultPositions()[node.id] || { x: 15, y: 100 }, // Używamy zapisanych pozycji
-    data: { label: node.id, online: node.online },
+    data: { label: node.id, online: node.online, faulty: node.faulty },
   }));
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);

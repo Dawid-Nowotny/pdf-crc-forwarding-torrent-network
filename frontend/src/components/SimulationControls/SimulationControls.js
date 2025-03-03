@@ -19,11 +19,12 @@ function SimulationControls() {
   
     if (faulty_node !== 'None' && faulty_polynomial !== '') {
       await startWithFaultyTorrent({ polynomial, faulty_node, faulty_polynomial });
+      nodeStatusService.updateAllNodeStatuses(true, false);
+      nodeStatusService.updateNodeStatus(faulty_node, true, true);
     } else {
       await startTorrents({ polynomial });
+      nodeStatusService.updateAllNodeStatuses(true, false);
     }
-  
-    nodeStatusService.updateAllNodeStatuses(true);
     window.location.reload();
   };
   
@@ -31,13 +32,13 @@ function SimulationControls() {
 
   const handleStop = async () => {
     await stopTorrents();
-    nodeStatusService.updateAllNodeStatuses(false);
+    nodeStatusService.updateAllNodeStatuses(false, false);
     window.location.reload(); 
   };
 
   const handleClose = async () => {
     await closeNode(close_node);
-    nodeStatusService.updateNodeStatus(close_node, false);
+    nodeStatusService.updateNodeStatus(close_node, false, false);
     //window.location.reload(); 
   };
 
@@ -77,7 +78,7 @@ function SimulationControls() {
             </select>
           </div>
           <div>
-            <label htmlFor="polynomial">Faulty Polynomial (8-bit number)</label>
+            <label htmlFor="polynomial">Faulty Polynomial</label>
             <input
               id="faultyPolynomial"
               type="text"
