@@ -40,6 +40,9 @@ class LogService {
         const logObject = JSON.parse(rawData.log);
   
         this.logs.push(logObject);
+
+        this.setShouldColorGraph(true);
+
         this.subscribers.forEach(callback => callback(this.logs));
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);

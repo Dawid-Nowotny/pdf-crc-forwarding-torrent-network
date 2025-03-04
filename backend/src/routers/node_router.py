@@ -6,6 +6,7 @@ from src.services.node_service import start_communication_websocket, close_commu
 from src.services.torrent_service import transfer_file
 from src.domain.TorrentNode import TorrentNode
 from src.schemas.polynomial_request import PolynomialRequest
+from src.schemas.faulty_polynomial_request import FaultyPolynomialRequest
 from src.constants import NODE_PORTS
 
 router = APIRouter()
@@ -17,6 +18,21 @@ network = None
 async def start_websockets(polynomial: PolynomialRequest):
     global network 
     network = {node: TorrentNode(node, polynomial.polynomial) for node in NODE_PORTS.keys()}
+    start_communication_websocket()
+
+@router.post("/start-torrents-with-fault", status_code=status.HTTP_204_NO_CONTENT)
+async def start_torrents_with_fault(
+    request: FaultyPolynomialRequest,
+):
+    global network
+    network = {}
+
+    for node, port in NODE_PORTS.items():
+        if request.faulty_node == node and request.faulty_polynomial:
+            network[node] = TorrentNode(node, request.faulty_polynomial)
+        else:
+            network[node] = TorrentNode(node, request.polynomial)
+
     start_communication_websocket()
 
 @router.delete("/stop-torrents", status_code=status.HTTP_204_NO_CONTENT)
@@ -33,6 +49,7 @@ async def send_pdf_to_node(
     file: UploadFile,
     first_seeder: str = Form(...),
     target_node: str = Form(...),
+    faulty_node: str = Form(None)
 ):
     global network
 
@@ -42,7 +59,7 @@ async def send_pdf_to_node(
     file.file.seek(0)
 
     try:
-        await transfer_file(file, node_request.first_seeder, node_request.target_node, network)
+        await transfer_file(file, node_request.first_seeder, node_request.target_node, network, faulty_node)
         return {"message": "File transferred successfully"}
     except HTTPException as e:
         raise e

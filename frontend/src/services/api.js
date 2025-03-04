@@ -2,19 +2,23 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/api/v1/node';
 
-export const startWebsockets = async (data) => {
-  await axios.post(`${API_URL}/start-websockets`, data);
+export const startTorrents = async (data) => {
+  await axios.post(`${API_URL}/start-torrents`, data);
 };
 
-export const stopWebsockets = async () => {
-  await axios.delete(`${API_URL}/stop-websockets`);
+export const startWithFaultyTorrent = async (data) => {
+  await axios.post(`${API_URL}/start-torrents-with-fault`, data);
+}
+
+export const stopTorrents = async () => {
+  await axios.delete(`${API_URL}/stop-torrents`);
 };
 
-export const closeWebsocket = async (nodeName) => {
-  await axios.delete(`${API_URL}/close-node/${nodeName}`);
+export const closeNode = async (nodeName) => {
+  await axios.delete(`${API_URL}/stop-torrent/${nodeName}`);
 };
 
-export const sendFile = async (formData) => {
+export const sendPDF = async (formData) => {
   await axios.post(`${API_URL}/send-pdf`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',

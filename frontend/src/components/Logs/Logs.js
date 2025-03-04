@@ -6,24 +6,17 @@ const Logs = () => {
   const [logs, setLogs] = useState([]);
   const [expandedLogs, setExpandedLogs] = useState({});
   const [message, setMessage] = useState('');
-  const [type, setType] = useState(''); 
+  const [type, setType] = useState('');
   const [showMessage, setShowMessage] = useState(false);
-
-  const handleAddMessage = (message, type) => {
-    setMessage(message);
-    setType(type);
-    setShowMessage(true);
-  };
 
   useEffect(() => {
     if (showMessage) {
       const timer = setTimeout(() => {
         setShowMessage(false);
-      }, 5000); 
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [showMessage]);
-
 
   useEffect(() => {
     const handleNewLogs = (newLogs) => {
@@ -34,13 +27,13 @@ const Logs = () => {
       );
       if (errorLog) {
         let errorMessage = errorLog.details?.message || 'An error occurred.';
-        handleAddMessage(errorMessage, 'error');
+        setMessage(errorMessage);
+        setType('error');
+        setShowMessage(true);
       }
-
     };
 
     logService.subscribe(handleNewLogs);
-
     logService.openConnection();
 
     return () => {
@@ -50,39 +43,38 @@ const Logs = () => {
   }, []);
 
   const toggleExpandLog = (index) => {
-    setExpandedLogs((prevExpandedLogs) => ({
-      ...prevExpandedLogs,
-      [index]: !prevExpandedLogs[index],
+    setExpandedLogs((prev) => ({
+      ...prev,
+      [index]: !prev[index],
     }));
   };
 
   return (
     <div className="Logs">
       {showMessage && (
-        <div class="MessageBarContainer"><div class={type === 'success' ? 'MessageBar' : 'MessageBarError'}>{message}</div></div>
+        <div className="MessageBarContainer">
+          <div className={type === 'success' ? 'MessageBar' : 'MessageBarError'}>
+            {message}
+          </div>
+        </div>
       )}
-      <div class="bar">Logs</div>
+      <div className="bar">Logs</div>
       <div className="log-container">
         {logs.map((log, index) => (
           <div key={index} className="log-entry">
-           <div className="expand-container">
+            <div className="expand-container">
               <span>
-                <strong>Received: </strong>
-                {"{"} 
-                {log.node ? "node" : "target node"}: "{log.node || log.details?.target_node}", status: "{log.status}"
-                {"}"}
+                <strong>Current Node:</strong> "{log.current_node}", 
+                <strong> Status:</strong> "{log.status}"
               </span>
-              <button
-                onClick={() => toggleExpandLog(index)}
-                className="expand-button"
-              >
+              <button onClick={() => toggleExpandLog(index)} className="expand-button">
                 {expandedLogs[index] ? 'Collapse' : 'Expand'}
               </button>
             </div>
 
-            {expandedLogs[index] && (
+            {expandedLogs[index] && log.details && (
               <pre className="expanded-log">
-                {JSON.stringify(log, null, 2)}
+                {JSON.stringify(log.details, null, 2)}
               </pre>
             )}
           </div>

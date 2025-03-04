@@ -4,7 +4,9 @@ import shutil
 import os
 import time
 import asyncio
+import uuid
 
+from .pdf_service import corrupt_file
 from src.domain.network import create_network
 from src.schemas.PDFRequest import PDFRequest
 
@@ -22,9 +24,11 @@ async def wait_for_previous_node(previous_node) -> None:
     while previous_node not in transfer_status or not transfer_status[previous_node]:
         await asyncio.sleep(0.1)
 
-async def transfer_file(file: UploadFile, first_seeder: str, target_node: str, network: dict):
+async def transfer_file(file: UploadFile, first_seeder: str, target_node: str, network: dict, faulty_node: str = None):
     global transfer_status
     graph = create_network()
+    random_filename = f"{uuid.uuid4()}{os.path.splitext(file.filename)[1]}"
+    file.filename = random_filename
 
     if network is None:
         error_message = {
@@ -76,13 +80,17 @@ async def transfer_file(file: UploadFile, first_seeder: str, target_node: str, n
                 time.sleep(1)
 
             receiver_file_path = f"{network[receiver].save_path}/{file.filename}"
+
+            if receiver == faulty_node and faulty_node is not None:
+                corrupt_file(receiver_file_path)
+
             network[receiver].seed_file(receiver_file_path)
 
             received_crc_value = network[receiver].calculate_crc(receiver_file_path)
             crc_success = received_crc_value == initial_crc
 
             transfer_log = {
-                "node": sender,
+                "current_node": sender,
                 "status": "TRANSFER_SUCCESS" if crc_success else "CRC_ERROR",
                 "details": {
                     "target_node": receiver,
@@ -116,7 +124,7 @@ async def transfer_file(file: UploadFile, first_seeder: str, target_node: str, n
     await wait_for_previous_node(path[-2])
 
     final_log = {
-        "node": final_node,
+        "current_node": final_node,
         "status": "TRANSFER_SUCCESS",
         "details": {
             "message": "Final node received the file successfully.",

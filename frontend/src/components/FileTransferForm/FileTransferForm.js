@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { sendFile } from '../../services/api';
+import { sendPDF } from '../../services/api';
 import './FileTransferForm.css';
 import logService from '../../services/LogService';
 
 function FileTransferForm() {
   const [file, setFile] = useState(null);
-  const [admin_node, setAdminNode] = useState('Node1');
+  const [first_seeder, setFirstSeeder] = useState('Node1');
   const [target_node, setTargetNode] = useState('Node5');
-  const [polynomial, setPolynomial] = useState('11111111');
+  const [faulty_node, setFaultyNode] = useState('None');
   const [message, setMessage] = useState('');
   const [type, setType] = useState(''); 
   const [showMessage, setShowMessage] = useState(false);
@@ -33,19 +33,22 @@ function FileTransferForm() {
     logService.setShouldColorGraph(false);
     e.preventDefault();
 
-    if (!file || !admin_node || !target_node || !polynomial) {
+    if (!file || !first_seeder || !target_node) {
       handleAddMessage('Please fill in all fields!', 'error');
       return;
     }
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('admin_node', admin_node);
+    formData.append('first_seeder', first_seeder);
     formData.append('target_node', target_node);
-    formData.append('polynomial', polynomial);
+    if(faulty_node !== 'None') {
+      formData.append('faulty_node', faulty_node);
+    }
+    console.log(formData.get('faulty_node'));
 
     try {
-      await sendFile(formData);
+      await sendPDF(formData);
       setTimeout(() => {
         logService.setShouldColorGraph(true);
       }, 100);
@@ -73,11 +76,11 @@ function FileTransferForm() {
           </div>
 
           <div>
-            <label htmlFor="adminNode">Admin Node</label>
+            <label htmlFor="adminNode">First Seeder</label>
             <select
               id="adminNode"
-              value={admin_node}
-              onChange={(e) => setAdminNode(e.target.value)}
+              value={first_seeder}
+              onChange={(e) => setFirstSeeder(e.target.value)}
             >
               <option value="Node1">Node1</option>
               <option value="Node2">Node2</option>
@@ -113,14 +116,24 @@ function FileTransferForm() {
           </div>
 
           <div>
-            <label htmlFor="polynomial">Polynomial (8-bit number)</label>
-            <input
-              id="polynomial"
-              type="text"
-              placeholder="Polynomial (8-bit number)"
-              value={polynomial}
-              onChange={(e) => setPolynomial(e.target.value)}
-            />
+            <label htmlFor="faultyNode">Faulty Node</label>
+            <select
+              id="faultyNode"
+              value={faulty_node}
+              onChange={(e) => setFaultyNode(e.target.value)} 
+            >
+              <option value="None">None</option>
+              <option value="Node1">Node1</option>
+              <option value="Node2">Node2</option>
+              <option value="Node3">Node3</option>
+              <option value="Node4">Node4</option>
+              <option value="Node5">Node5</option>
+              <option value="Node6">Node6</option>
+              <option value="Node7">Node7</option>
+              <option value="Node8">Node8</option>
+              <option value="Node9">Node9</option>
+              <option value="Node10">Node10</option>
+            </select>
           </div>
 
           <button type="submit">Send</button>
