@@ -7,6 +7,7 @@ function FileTransferForm() {
   const [file, setFile] = useState(null);
   const [first_seeder, setFirstSeeder] = useState('Node1');
   const [target_node, setTargetNode] = useState('Node5');
+  const [faulty_node, setFaultyNode] = useState('None');
   const [message, setMessage] = useState('');
   const [type, setType] = useState(''); 
   const [showMessage, setShowMessage] = useState(false);
@@ -41,6 +42,10 @@ function FileTransferForm() {
     formData.append('file', file);
     formData.append('first_seeder', first_seeder);
     formData.append('target_node', target_node);
+    if(faulty_node !== 'None') {
+      formData.append('faulty_node', faulty_node);
+    }
+    console.log(formData.get('faulty_node'));
 
     try {
       await sendPDF(formData);
@@ -97,6 +102,27 @@ function FileTransferForm() {
               value={target_node}
               onChange={(e) => setTargetNode(e.target.value)}
             >
+              <option value="Node1">Node1</option>
+              <option value="Node2">Node2</option>
+              <option value="Node3">Node3</option>
+              <option value="Node4">Node4</option>
+              <option value="Node5">Node5</option>
+              <option value="Node6">Node6</option>
+              <option value="Node7">Node7</option>
+              <option value="Node8">Node8</option>
+              <option value="Node9">Node9</option>
+              <option value="Node10">Node10</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="faultyNode">Faulty Node</label>
+            <select
+              id="faultyNode"
+              value={faulty_node}
+              onChange={(e) => setFaultyNode(e.target.value)} 
+            >
+              <option value="None">None</option>
               <option value="Node1">Node1</option>
               <option value="Node2">Node2</option>
               <option value="Node3">Node3</option>
